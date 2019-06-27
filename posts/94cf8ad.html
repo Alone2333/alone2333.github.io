@@ -6,15 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives: 2019 | XJL的个人博客 | Hexo</title>
+  <title>ActiveMQ Queue 和 Topic的区别 | XJL的个人博客 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="XJL的个人博客 | Hexo">
-<meta property="og:url" content="http://yoursite.com/archives/2019/index.html">
+  <meta name="description" content="比较项目 Topic Queue     工作模式 “发布订阅”模式，多个订阅者都会接收到发布的同一个消息 “点对点”模式，一条消息只能被一个消费者消费   有无状态 无状态 Queue数据默认被mq以文件形式保存，比如ActiveMQ一般保存在$AMQ_HOME\data\kr-store\data目录下，也可以配置成DB存储   传递完整性 如果没有订阅者，消息会被丢弃，永远都不会被消费">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ActiveMQ Queue 和 Topic的区别">
+<meta property="og:url" content="http://yoursite.com/posts/94cf8ad.html">
 <meta property="og:site_name" content="XJL的个人博客 | Hexo">
+<meta property="og:description" content="比较项目 Topic Queue     工作模式 “发布订阅”模式，多个订阅者都会接收到发布的同一个消息 “点对点”模式，一条消息只能被一个消费者消费   有无状态 无状态 Queue数据默认被mq以文件形式保存，比如ActiveMQ一般保存在$AMQ_HOME\data\kr-store\data目录下，也可以配置成DB存储   传递完整性 如果没有订阅者，消息会被丢弃，永远都不会被消费">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-06-27T03:58:34.931Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="XJL的个人博客 | Hexo">
+<meta name="twitter:title" content="ActiveMQ Queue 和 Topic的区别">
+<meta name="twitter:description" content="比较项目 Topic Queue     工作模式 “发布订阅”模式，多个订阅者都会接收到发布的同一个消息 “点对点”模式，一条消息只能被一个消费者消费   有无状态 无状态 Queue数据默认被mq以文件形式保存，比如ActiveMQ一般保存在$AMQ_HOME\data\kr-store\data目录下，也可以配置成DB存储   传递完整性 如果没有订阅者，消息会被丢弃，永远都不会被消费">
   
     <link rel="alternative" href="/atom.xml" title="XJL的个人博客 | Hexo" type="application/atom+xml">
   
@@ -150,103 +154,186 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-ActiveMQ-Queue-和-Topic的区别" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      ActiveMQ Queue 和 Topic的区别
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/94cf8ad.html" class="archive-article-date">
+
+        
+        <a href="/posts/94cf8ad.html" class="archive-article-date">
   	<time datetime="2019-06-27T03:46:39.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-06-27</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/94cf8ad.html">ActiveMQ Queue 和 Topic的区别</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <table>
+<thead>
+<tr>
+<th>比较项目</th>
+<th style="text-align:center">Topic</th>
+<th>Queue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工作模式</td>
+<td style="text-align:center">“发布订阅”模式，多个订阅者都会接收到发布的同一个消息</td>
+<td>“点对点”模式，一条消息只能被一个消费者消费</td>
+</tr>
+<tr>
+<td>有无状态</td>
+<td style="text-align:center">无状态</td>
+<td>Queue数据默认被mq以文件形式保存，比如ActiveMQ一般保存在$AMQ_HOME\data\kr-store\data目录下，也可以配置成DB存储</td>
+</tr>
+<tr>
+<td>传递完整性</td>
+<td style="text-align:center">如果没有订阅者，消息会被丢弃，永远都不会被消费</td>
+<td>如果没有消费者，消息不会丢弃，会一直在队列中等待被消费</td>
+</tr>
+<tr>
+<td>处理效率</td>
+<td style="text-align:center">由于消息要按照订阅者的数据进行复制，所以处理性能会随着订阅者的增加而明显降低，并且还要结合不同消息协议自身的性能差异</td>
+<td>由于一条消息只发送给一个消费者，所以就算消费者再多，性能也不会有明显降低，当然不同消息协议的具体性能也是有差异的</td>
+</tr>
+</tbody>
+</table>
 
-        <div class="article-info info-on-right">
-          
-          
+      
 
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/posts/94cf8ad.html" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/b24dd347.html" class="archive-article-date">
-  	<time datetime="2019-04-16T03:14:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-16</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/posts/b24dd347.html" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">我的第一篇博客文章</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/b24dd347.html">我的第一篇博客文章</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/4a17b156.html" class="archive-article-date">
-  	<time datetime="2019-04-16T00:51:55.476Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-16</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/4a17b156.html">Hello World</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
+  
 
 
           </div>
@@ -269,8 +356,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,

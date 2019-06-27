@@ -152,6 +152,99 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-ActiveMQ-Queue-和-Topic的区别" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/posts/94cf8ad.html">ActiveMQ Queue 和 Topic的区别</a>
+    </h1>
+  
+
+        
+        <a href="/posts/94cf8ad.html" class="archive-article-date">
+  	<time datetime="2019-06-27T03:46:39.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-06-27</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <table>
+<thead>
+<tr>
+<th>比较项目</th>
+<th style="text-align:center">Topic</th>
+<th>Queue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工作模式</td>
+<td style="text-align:center">“发布订阅”模式，多个订阅者都会接收到发布的同一个消息</td>
+<td>“点对点”模式，一条消息只能被一个消费者消费</td>
+</tr>
+<tr>
+<td>有无状态</td>
+<td style="text-align:center">无状态</td>
+<td>Queue数据默认被mq以文件形式保存，比如ActiveMQ一般保存在$AMQ_HOME\data\kr-store\data目录下，也可以配置成DB存储</td>
+</tr>
+<tr>
+<td>传递完整性</td>
+<td style="text-align:center">如果没有订阅者，消息会被丢弃，永远都不会被消费</td>
+<td>如果没有消费者，消息不会丢弃，会一直在队列中等待被消费</td>
+</tr>
+<tr>
+<td>处理效率</td>
+<td style="text-align:center">由于消息要按照订阅者的数据进行复制，所以处理性能会随着订阅者的增加而明显降低，并且还要结合不同消息协议自身的性能差异</td>
+<td>由于一条消息只发送给一个消费者，所以就算消费者再多，性能也不会有明显降低，当然不同消息协议的具体性能也是有差异的</td>
+</tr>
+</tbody>
+</table>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/posts/94cf8ad.html">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-我的第一篇博客文章" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
