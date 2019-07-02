@@ -152,6 +152,105 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-ActiveMQ的消息持久化机制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/posts/a6ad92a5.html">ActiveMQ的消息持久化机制</a>
+    </h1>
+  
+
+        
+        <a href="/posts/a6ad92a5.html" class="archive-article-date">
+  	<time datetime="2019-07-01T07:54:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="ActiveMQ的消息持久化机制有："><a href="#ActiveMQ的消息持久化机制有：" class="headerlink" title="ActiveMQ的消息持久化机制有："></a>ActiveMQ的消息持久化机制有：</h3><ul>
+<li>AMQ  基于日志文件</li>
+<li>KahaDB  基于日志文件，从ActiveMQ 5.4开始默认的持久化方式</li>
+<li>JDBC  基于第三方数据库，存储在数据库中</li>
+<li>LevelDB  基于文件的本地数据库存储，在ActiveMQ 5.8版本推出LevelDB的持久化引擎高于KahaDB</li>
+<li>Replicated LevelDB Store  从ActiveMQ 5.9提供基于LevelDB和Zookeeper的数据复制方案，用于Master-slave方式的首选 数据复制方案</li>
+</ul>
+<h4 id="KahaDB的存储结构"><a href="#KahaDB的存储结构" class="headerlink" title="KahaDB的存储结构"></a>KahaDB的存储结构</h4><ol>
+<li>db-<number>.log  KahaDB存储消息到预定义大小的日志文件中，每32MB一个文件，当数据文件已满时，会创建一个新的文件，Number也随之递增，当某一个日志文件中的消息不会再被使用，该文件将删除或归档</number></li>
+<li>db.data  使用B-Tree作为索引指向db-<number>.log中存储的消息</number></li>
+<li>db.free  当前db.data文件里哪些页面是空闲的，文件具体内容是所有空闲页的Id，方便后面建索引的时候，先从空闲的那建起来，保证索引的连续性没有碎片</li>
+<li>db.redo  用来进行消息恢复，如果KahaDB消息存储 在强制退出后启动，用于恢复BTree索引</li>
+</ol>
+<h4 id="JDBC持久化"><a href="#JDBC持久化" class="headerlink" title="JDBC持久化"></a><strong>JDBC持久化</strong></h4><ol>
+<li><p>将mysql-connector-java-5.1.47.jar copy到ActiveMQ的lib目录下</p>
+</li>
+<li><p>编辑ActiveMQ安装目录/conf/activemq.xml，将默认的kahaDB注释或删除掉，以及配置数据库连接池（如果需要使用其他连接池，将该连接池jar包copy到lib目录下，修改对应配置），加上如下配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;persistenceAdapter&gt;</span><br><span class="line">         &lt;!-- &lt;kahaDB directory=&quot;$&#123;activemq.data&#125;/kahadb&quot;/&gt;  -&gt;&gt;</span><br><span class="line">          &lt;jdbcPersistenceAdapter dataSource=&quot;#mysql-ds&quot; createTablesOnStartup=&quot;true&quot;/&gt;		</span><br><span class="line">          &lt;!-- createTablesOnStartup属性表示在每次启动时都会新创建表，默认为true，第一次创建设为true，之后修改为false --&gt;</span><br><span class="line">&lt;/persistenceAdapter&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=&quot;mysql-ds&quot; class=&quot;org.apache.commons.dbcp2.BasicDataSource&quot; destroy-method=&quot;close&quot;&gt;</span><br><span class="line">          &lt;property name=&quot;driverClassName&quot; value=&quot;com.mysql.jdbc.Driver&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;url&quot; value=&quot;jdbc:mysql://192.168.0.104:3306/activemq?relaxAutoCommit=true&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;username&quot; value=&quot;root&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;password&quot; value=&quot;123&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;poolPreparedStatements&quot; value=&quot;true&quot;/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在MySQL或Oracle数据库创建ActiveMQ数据库，在mq启动后会在数据库中创建如下三张表</p>
+<ul>
+<li>activemq-acks    存储mq中topic的订阅者信息</li>
+<li>activemq-msgs    存储mq中所有的消息</li>
+<li>activemq-lock      存储关于当前获得到读写权限的broker</li>
+</ul>
+</li>
+<li><p>如果只使用jdbc性能非常差，一般使用 jdbc with journal，journal相当于作为中间的一层高速缓存</p>
+<p>例如：</p>
+<p>​    生产者发送了几千条消息到mq，若消费者消费消息特别快，在journal同步到DB之前已经消费了百分之九十的消息，journal只会同步剩余的百分之十的消息到DB，若消费者消费消息特别慢，journal会批量的将消息写入到DB</p>
+</li>
+<li><p>使用jdbc with journal，需要修改相关配置，将整个persistenceAdapter注释掉，加上以下配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--    &lt;persistenceAdapter&gt;</span><br><span class="line">          &lt;kahaDB directory=&quot;$&#123;activemq.data&#125;/kahadb&quot;/&gt;</span><br><span class="line">          &lt;jdbcPersistenceAdapter dataSource=&quot;#mysql-ds&quot; createTablesOnStartup=&quot;true&quot;/&gt;</span><br><span class="line">        &lt;/persistenceAdapter&gt; </span><br><span class="line">--&gt;</span><br><span class="line"></span><br><span class="line">&lt;persistenceFactory&gt;</span><br><span class="line">          &lt;journalPersistenceAdapterFactory </span><br><span class="line">                journalLogFiles=&quot;4&quot;</span><br><span class="line">                journalLogFileSize=&quot;32768&quot;</span><br><span class="line">                useJournal=&quot;true&quot;</span><br><span class="line">                useQuickJournal=&quot;true&quot;</span><br><span class="line">                dataSource=&quot;#mysql-ds&quot;</span><br><span class="line">                dataDirectory=&quot;activemq-data&quot;/&gt;</span><br><span class="line">&lt;/persistenceFactory&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如上，已完成JDBC持久化的配置</p>
+</li>
+</ol>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/posts/a6ad92a5.html">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-ActiveMQ-Queue-和-Topic的区别" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -193,7 +292,7 @@
 </tr>
 <tr>
 <td>传递完整性</td>
-<td style="text-align:center">如果没有订阅者，消息会被丢弃，永远都不会被消费</td>
+<td style="text-align:center">如果没有订阅者，消息会被丢弃，永远都不会被消费、</td>
 <td>如果没有消费者，消息不会丢弃，会一直在队列中等待被消费</td>
 </tr>
 <tr>

@@ -6,15 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives | XJL的个人博客 | Hexo</title>
+  <title>ActiveMQ的消息持久化机制 | XJL的个人博客 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="XJL的个人博客 | Hexo">
-<meta property="og:url" content="http://yoursite.com/archives/index.html">
+  <meta name="description" content="ActiveMQ的消息持久化机制有： AMQ  基于日志文件 KahaDB  基于日志文件，从ActiveMQ 5.4开始默认的持久化方式 JDBC  基于第三方数据库，存储在数据库中 LevelDB  基于文件的本地数据库存储，在ActiveMQ 5.8版本推出LevelDB的持久化引擎高于KahaDB Replicated LevelDB Store  从ActiveMQ 5.9提供基于Lev">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ActiveMQ的消息持久化机制">
+<meta property="og:url" content="http://yoursite.com/posts/a6ad92a5.html">
 <meta property="og:site_name" content="XJL的个人博客 | Hexo">
+<meta property="og:description" content="ActiveMQ的消息持久化机制有： AMQ  基于日志文件 KahaDB  基于日志文件，从ActiveMQ 5.4开始默认的持久化方式 JDBC  基于第三方数据库，存储在数据库中 LevelDB  基于文件的本地数据库存储，在ActiveMQ 5.8版本推出LevelDB的持久化引擎高于KahaDB Replicated LevelDB Store  从ActiveMQ 5.9提供基于Lev">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-07-01T08:44:42.160Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="XJL的个人博客 | Hexo">
+<meta name="twitter:title" content="ActiveMQ的消息持久化机制">
+<meta name="twitter:description" content="ActiveMQ的消息持久化机制有： AMQ  基于日志文件 KahaDB  基于日志文件，从ActiveMQ 5.4开始默认的持久化方式 JDBC  基于第三方数据库，存储在数据库中 LevelDB  基于文件的本地数据库存储，在ActiveMQ 5.8版本推出LevelDB的持久化引擎高于KahaDB Replicated LevelDB Store  从ActiveMQ 5.9提供基于Lev">
   
     <link rel="alternative" href="/atom.xml" title="XJL的个人博客 | Hexo" type="application/atom+xml">
   
@@ -150,130 +154,192 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-ActiveMQ的消息持久化机制" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      ActiveMQ的消息持久化机制
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/a6ad92a5.html" class="archive-article-date">
+
+        
+        <a href="/posts/a6ad92a5.html" class="archive-article-date">
   	<time datetime="2019-07-01T07:54:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-01</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/a6ad92a5.html">ActiveMQ的消息持久化机制</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="ActiveMQ的消息持久化机制有："><a href="#ActiveMQ的消息持久化机制有：" class="headerlink" title="ActiveMQ的消息持久化机制有："></a>ActiveMQ的消息持久化机制有：</h3><ul>
+<li>AMQ  基于日志文件</li>
+<li>KahaDB  基于日志文件，从ActiveMQ 5.4开始默认的持久化方式</li>
+<li>JDBC  基于第三方数据库，存储在数据库中</li>
+<li>LevelDB  基于文件的本地数据库存储，在ActiveMQ 5.8版本推出LevelDB的持久化引擎高于KahaDB</li>
+<li>Replicated LevelDB Store  从ActiveMQ 5.9提供基于LevelDB和Zookeeper的数据复制方案，用于Master-slave方式的首选 数据复制方案</li>
+</ul>
+<h4 id="KahaDB的存储结构"><a href="#KahaDB的存储结构" class="headerlink" title="KahaDB的存储结构"></a>KahaDB的存储结构</h4><ol>
+<li>db-<number>.log  KahaDB存储消息到预定义大小的日志文件中，每32MB一个文件，当数据文件已满时，会创建一个新的文件，Number也随之递增，当某一个日志文件中的消息不会再被使用，该文件将删除或归档</number></li>
+<li>db.data  使用B-Tree作为索引指向db-<number>.log中存储的消息</number></li>
+<li>db.free  当前db.data文件里哪些页面是空闲的，文件具体内容是所有空闲页的Id，方便后面建索引的时候，先从空闲的那建起来，保证索引的连续性没有碎片</li>
+<li>db.redo  用来进行消息恢复，如果KahaDB消息存储 在强制退出后启动，用于恢复BTree索引</li>
+</ol>
+<h4 id="JDBC持久化"><a href="#JDBC持久化" class="headerlink" title="JDBC持久化"></a><strong>JDBC持久化</strong></h4><ol>
+<li><p>将mysql-connector-java-5.1.47.jar copy到ActiveMQ的lib目录下</p>
+</li>
+<li><p>编辑ActiveMQ安装目录/conf/activemq.xml，将默认的kahaDB注释或删除掉，以及配置数据库连接池（如果需要使用其他连接池，将该连接池jar包copy到lib目录下，修改对应配置），加上如下配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;persistenceAdapter&gt;</span><br><span class="line">         &lt;!-- &lt;kahaDB directory=&quot;$&#123;activemq.data&#125;/kahadb&quot;/&gt;  -&gt;&gt;</span><br><span class="line">          &lt;jdbcPersistenceAdapter dataSource=&quot;#mysql-ds&quot; createTablesOnStartup=&quot;true&quot;/&gt;		</span><br><span class="line">          &lt;!-- createTablesOnStartup属性表示在每次启动时都会新创建表，默认为true，第一次创建设为true，之后修改为false --&gt;</span><br><span class="line">&lt;/persistenceAdapter&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=&quot;mysql-ds&quot; class=&quot;org.apache.commons.dbcp2.BasicDataSource&quot; destroy-method=&quot;close&quot;&gt;</span><br><span class="line">          &lt;property name=&quot;driverClassName&quot; value=&quot;com.mysql.jdbc.Driver&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;url&quot; value=&quot;jdbc:mysql://192.168.0.104:3306/activemq?relaxAutoCommit=true&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;username&quot; value=&quot;root&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;password&quot; value=&quot;123&quot;/&gt;</span><br><span class="line">          &lt;property name=&quot;poolPreparedStatements&quot; value=&quot;true&quot;/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在MySQL或Oracle数据库创建ActiveMQ数据库，在mq启动后会在数据库中创建如下三张表</p>
+<ul>
+<li>activemq-acks    存储mq中topic的订阅者信息</li>
+<li>activemq-msgs    存储mq中所有的消息</li>
+<li>activemq-lock      存储关于当前获得到读写权限的broker</li>
+</ul>
+</li>
+<li><p>如果只使用jdbc性能非常差，一般使用 jdbc with journal，journal相当于作为中间的一层高速缓存</p>
+<p>例如：</p>
+<p>​    生产者发送了几千条消息到mq，若消费者消费消息特别快，在journal同步到DB之前已经消费了百分之九十的消息，journal只会同步剩余的百分之十的消息到DB，若消费者消费消息特别慢，journal会批量的将消息写入到DB</p>
+</li>
+<li><p>使用jdbc with journal，需要修改相关配置，将整个persistenceAdapter注释掉，加上以下配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--    &lt;persistenceAdapter&gt;</span><br><span class="line">          &lt;kahaDB directory=&quot;$&#123;activemq.data&#125;/kahadb&quot;/&gt;</span><br><span class="line">          &lt;jdbcPersistenceAdapter dataSource=&quot;#mysql-ds&quot; createTablesOnStartup=&quot;true&quot;/&gt;</span><br><span class="line">        &lt;/persistenceAdapter&gt; </span><br><span class="line">--&gt;</span><br><span class="line"></span><br><span class="line">&lt;persistenceFactory&gt;</span><br><span class="line">          &lt;journalPersistenceAdapterFactory </span><br><span class="line">                journalLogFiles=&quot;4&quot;</span><br><span class="line">                journalLogFileSize=&quot;32768&quot;</span><br><span class="line">                useJournal=&quot;true&quot;</span><br><span class="line">                useQuickJournal=&quot;true&quot;</span><br><span class="line">                dataSource=&quot;#mysql-ds&quot;</span><br><span class="line">                dataDirectory=&quot;activemq-data&quot;/&gt;</span><br><span class="line">&lt;/persistenceFactory&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如上，已完成JDBC持久化的配置</p>
+</li>
+</ol>
 
-        <div class="article-info info-on-right">
-          
-          
+      
 
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/posts/a6ad92a5.html" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/94cf8ad.html" class="archive-article-date">
-  	<time datetime="2019-06-27T03:46:39.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-06-27</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/posts/94cf8ad.html" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">ActiveMQ Queue 和 Topic的区别</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/94cf8ad.html">ActiveMQ Queue 和 Topic的区别</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/b24dd347.html" class="archive-article-date">
-  	<time datetime="2019-04-16T03:14:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-16</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/b24dd347.html">我的第一篇博客文章</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/posts/4a17b156.html" class="archive-article-date">
-  	<time datetime="2019-04-16T00:51:55.476Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-16</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/posts/4a17b156.html">Hello World</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
-  
-    </div></section>
-  
-
-    
 
 
           </div>
@@ -296,8 +362,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
